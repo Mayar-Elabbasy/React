@@ -1,60 +1,81 @@
 // import logo from './logo.svg';
 import React, { useState } from 'react';
 import './App.css';
-import { useTranslation } from "react-i18next";
+// import { useTranslation } from "react-i18next";
+// import Tippy from '@tippy.js/react';
+// import 'tippy.js/dist/tippy.css'; // optional
+// import 'tippy.js/themes/light.css';
 import TextSelector from 'text-selection-react';
-import Tippy from '@tippy.js/react';
-import 'tippy.js/dist/tippy.css'; // optional
-import 'tippy.js/themes/light.css';
+import axios from 'axios';
+import ReactTooltip from 'react-tooltip';
+const qs = require('querystring')
 // import {Translator, Translate} from 'react-auto-translate';
    
 
 function App() {
-  const [hidden, setHidden] = useState(true);
-  const { t, i18n } = useTranslation();
+  // const [hidden, setHidden] = useState(true);
+  const [state, setState] = useState({
+    arabicTranslation: ''
+  })
+  // const { t, i18n } = useTranslation();
+  // const changeLanguage = () => {
+  //   setHidden(false);
+  //   i18n.changeLanguage("ar");
+  // };
 
-  const changeLanguage = () => {
-    setHidden(false);
-    i18n.changeLanguage("ar");
-  };
+  const config = {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'x-rapidapi-key': "3f3dccb986msh64fdfb9f6022ffcp1d5762jsn7f27b9a8c881",
+      'x-rapidapi-host': 'google-translate1.p.rapidapi.com',
+      'useQueryString': true
+    }
+  }
 
   const handler = (text) => {
-    changeLanguage(); 
+    // console.log("hii",text);
+    // console.log(window.getSelection().toString());
+    // changeLanguage(); 
     // alert(text)
-    console.log('selected text', text);
+    // setHidden(false);
+    axios.post('https://google-translate1.p.rapidapi.com/language/translate/v2',qs.stringify({
+      q: window.getSelection().toString(),
+      source: 'en',
+      target: 'ar'
+    }), config).then((res) => {
+        // console.log(res.data.data.translations[0].translatedText);
+      setState({ 
+        arabicTranslation: res.data.data.translations[0].translatedText 
+      })
+    }).catch((err) => console.log("err",err))
+    // console.log('selected text', text);
   }
   
-
-  console.log(hidden);
+  // console.log(state);
   return (
-    <div className="App mt-5 p-5 bg-warning">
+    <div className="App mt-5 p-5 bg-success">
       <TextSelector
-        events={[
-        {
-            text: 'Translate',
-            handler: handler
-        },
-        ]}
-        color={'lightblue'}
-        colorText={true}
+        unmark={true}
+        unmarkText="Remove"
+          events={[
+          {
+              text: 'Translate',
+              handler: handler
+          },
+          ]}
+          color={'lightblue'}
+          colorText={true}
       />
-      {(hidden === true) ? <div>{t("description.part1")} {t("description.part2")}</div>
-        : <Tippy theme={'light'} interactive={true} content={
+      <React.Fragment>
+        <ReactTooltip place="top" type="light" effect="float"/>
           <div>
-            {t("description.part1")} {t("description.part2")}
-          </div>} >
-        <div>Hello Everyone</div>
-      </Tippy>
-      }
-      <hr/>  
-
-       {/* <Translator
-      // cacheProvider={cacheProvider}
-      from='en'
-      to='ar'
-      googleApiKey='API_KEY'>
-        <h1><Translate>Welcome!</Translate></h1>
-      </Translator> */}
+            <a data-tip={state.arabicTranslation}>
+              Hello Everyone, This is a simple translation project using dynamic translation
+              <br />
+              Made by Mayar Elabbasy
+            </a> 
+          </div>
+      </React.Fragment> 
     </div>
   );
 }
